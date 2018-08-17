@@ -153,7 +153,7 @@ public class NotificationsApp extends DialogflowApp {
     ResponseBuilder responseBuilder = getResponseBuilder();
     if (request.isPermissionGranted() != null &&
         request.isPermissionGranted().booleanValue()) {
-      Argument userId = request.getArgument(ConstantsKt.UPDATES_USER_ID);
+      Argument userId = request.getArgument(ConstantsKt.ARG_UPDATES_USER_ID);
       if (userId != null) {
         // Store the user's ID in the database
         notificationService.subscribeUserToIntent(userId.getTextValue(),
