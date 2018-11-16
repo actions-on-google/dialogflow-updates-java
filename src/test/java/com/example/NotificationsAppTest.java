@@ -16,6 +16,9 @@
 
 package com.example;
 
+import com.example.service.notification.NotificationService;
+import com.example.service.tip.TipService;
+import java.util.ResourceBundle;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -23,23 +26,30 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.CompletableFuture;
+import org.mockito.Mockito;
 
 
 public class NotificationsAppTest {
 
+  private static final String BUNDLE = "resources";
+  private final TipService tipServiceMock = Mockito.mock(TipService.class);
+  private final NotificationService notificationServiceMock =
+      Mockito.mock(NotificationService.class);
+
   private static String fromFile(String fileName) throws IOException {
     Path absolutePath = Paths.get("src", "test", "resources",
-            fileName);
+        fileName);
     return new String(Files.readAllBytes(absolutePath));
   }
 
   @Test
   public void testWelcome() throws Exception {
-    NotificationsApp app = new NotificationsApp();
+    NotificationsApp app = new NotificationsApp(tipServiceMock,
+        notificationServiceMock, ResourceBundle.getBundle(BUNDLE));
     String requestBody = fromFile("request_welcome.json");
 
     CompletableFuture<String> future = app.handleRequest(requestBody,
-            null /* headers */);
+        null /* headers */);
 
     String responseJson = future.get();
     System.out.println("Actions response = " + responseJson);

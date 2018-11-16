@@ -7,13 +7,6 @@ This sample shows an app that gives tips about developing apps for the Google As
 ### Webhook
 The sample includes entry points for both AWS Lambda and Google App Engine.
 
-#### Build for AWS
-    1. Delete ActionsServlet
-    1. Remove the following line from build.gradle:
-       1. `apply from: 'build-gcp.gradle'`
-    1. Build the AWS Lambda compatible zip file using the buildAWSZip gradle task: `gradle buildAWSZip`
-    1. Deploy the zip file found at `build/distributions/notifications-java.zip` as an AWS Lambda function by following instructions at https://aws.amazon.com/lambda/
-
 #### Build for Google Cloud Platform
     1. Delete ActionsAWSHandler.java
     1. Remove the following line from build.gradle:
@@ -21,6 +14,13 @@ The sample includes entry points for both AWS Lambda and Google App Engine.
     1. Download the [SDK for App Engine](https://cloud.google.com/appengine/docs/flexible/java/download)
     1. Follow the steps for [Setting up a GCP project](https://cloud.google.com/appengine/docs/flexible/java/using-gradle#setting_up_and_validating_your_project_name_short)
     1. Deploy to [App Engine using Gradle](https://cloud.google.com/appengine/docs/flexible/java/using-gradle) by running the following command: `gradle appengineDeploy`
+
+#### Build for AWS
+    1. Delete ActionsServlet
+    1. Remove the following line from build.gradle:
+       1. `apply from: 'build-gcp.gradle'`
+    1. Build the AWS Lambda compatible zip file using the buildAWSZip gradle task: `gradle buildAWSZip`
+    1. Deploy the zip file found at `build/distributions/myactions.zip` as an AWS Lambda function by following instructions at https://aws.amazon.com/lambda/
 
 ### Setup
 

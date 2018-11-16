@@ -41,13 +41,12 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public class NotificationsApp extends DialogflowApp {
 
   private static final String TIPS_FILE_NAME = "tips.json";
-  private static final String BUNDLE_NAME = "prompts";
+  private static final String BUNDLE_NAME = "resources";
   private final TipService tipService;
   private final NotificationService notificationService;
   private final ResourceBundle prompts;
@@ -72,9 +71,9 @@ public class NotificationsApp extends DialogflowApp {
   }
 
   @ForIntent("Default Welcome Intent")
-  public CompletableFuture<ActionResponse> welcome(ActionRequest request)
+  public ActionResponse welcome(ActionRequest request)
       throws ExecutionException, InterruptedException {
-    ResponseBuilder responseBuilder = getResponseBuilder();
+    ResponseBuilder responseBuilder = getResponseBuilder(request);
     responseBuilder.add(prompts.getString("welcome"));
 
     // Get a list of all data categories from the database
@@ -83,17 +82,17 @@ public class NotificationsApp extends DialogflowApp {
     uniqueCategories = Lists.reverse(uniqueCategories);
     responseBuilder.addSuggestions(uniqueCategories.toArray(new String[0]));
 
-    return CompletableFuture.completedFuture(responseBuilder.build());
+    return responseBuilder.build();
   }
 
   @ForIntent("tell_tip")
-  public CompletableFuture<ActionResponse> tellTip(ActionRequest request)
+  public ActionResponse tellTip(ActionRequest request)
       throws ExecutionException, InterruptedException {
     // Retrieve a list of tips for the user selected category
     String category = (String) request.getParameter("category");
     Tip tip = tipService.getRandomTip(category);
     // Send data to the user
-    ResponseBuilder responseBuilder = getResponseBuilder();
+    ResponseBuilder responseBuilder = getResponseBuilder(request);
     responseBuilder.add(tip.getTip());
     // Display data in a card for devices with screen
     if (request.hasCapability(Capability.SCREEN_OUTPUT.getValue())) {
@@ -107,17 +106,16 @@ public class NotificationsApp extends DialogflowApp {
     } else {
       responseBuilder.endConversation();
     }
-    return CompletableFuture.completedFuture(responseBuilder.build());
+    return responseBuilder.build();
   }
 
   @ForIntent("tell_most_recent_tip")
-  public CompletableFuture<ActionResponse> tellMostRecentTip(
-      ActionRequest request)
+  public ActionResponse tellMostRecentTip(ActionRequest request)
       throws ExecutionException, InterruptedException {
     // Retrieve the most recently added data from the database
     Tip tip = tipService.getMostRecentTip();
     // Send data to the user
-    ResponseBuilder responseBuilder = getResponseBuilder();
+    ResponseBuilder responseBuilder = getResponseBuilder(request);
     responseBuilder.add(tip.getTip());
     // Display data in a card for devices with screen
     if (request.hasCapability(Capability.SCREEN_OUTPUT.getValue())) {
@@ -131,26 +129,24 @@ public class NotificationsApp extends DialogflowApp {
     } else {
       responseBuilder.endConversation();
     }
-    return CompletableFuture.completedFuture(responseBuilder.build());
+    return responseBuilder.build();
   }
 
   @ForIntent("setup_notification")
-  public CompletableFuture<ActionResponse> setupNotification(
-      ActionRequest request) {
+  public ActionResponse setupNotification(ActionRequest request) {
     // Ask for the user's permission to send push notifications
-    ResponseBuilder responseBuilder = getResponseBuilder();
+    ResponseBuilder responseBuilder = getResponseBuilder(request);
     responseBuilder
         .add(" ")
         .add(new UpdatePermission().setIntent("tell_most_recent_tip"));
 
-    return CompletableFuture.completedFuture(responseBuilder.build());
+    return responseBuilder.build();
   }
 
   @ForIntent("complete_notification_setup")
-  public CompletableFuture<ActionResponse> completeNotificationSetup(
-      ActionRequest request) {
+  public ActionResponse completeNotificationSetup(ActionRequest request) {
     // Verify the user has subscribed for push notifications
-    ResponseBuilder responseBuilder = getResponseBuilder();
+    ResponseBuilder responseBuilder = getResponseBuilder(request);
     if (request.isPermissionGranted() != null &&
         request.isPermissionGranted().booleanValue()) {
       Argument userId = request.getArgument(ConstantsKt.ARG_UPDATES_USER_ID);
@@ -164,15 +160,14 @@ public class NotificationsApp extends DialogflowApp {
       responseBuilder.add(prompts.getString("notificationSetupFail"));
     }
     responseBuilder.endConversation();
-    return CompletableFuture.completedFuture(responseBuilder.build());
+    return responseBuilder.build();
   }
 
   @ForIntent("setup_daily_update")
-  public CompletableFuture<ActionResponse> setupDailyUpdates(
-      ActionRequest request) {
+  public ActionResponse setupDailyUpdates(ActionRequest request) {
     // Ask for the user's permission to send daily updates
     String category = (String) request.getParameter("category");
-    ResponseBuilder responseBuilder = getResponseBuilder();
+    ResponseBuilder responseBuilder = getResponseBuilder(request);
     responseBuilder.add(" ");
     responseBuilder.add(new RegisterUpdate()
         .setIntent("tell_tip")
@@ -181,14 +176,13 @@ public class NotificationsApp extends DialogflowApp {
             .setName("category")
             .setTextValue(category))));
 
-    return CompletableFuture.completedFuture(responseBuilder.build());
+    return responseBuilder.build();
   }
 
   @ForIntent("complete_daily_updates_setup")
-  public CompletableFuture<ActionResponse> completeDailyUpdatesSetup(
-      ActionRequest request) {
+  public ActionResponse completeDailyUpdatesSetup(ActionRequest request) {
     // Verify the user has subscribed for daily updates
-    ResponseBuilder responseBuilder = getResponseBuilder();
+    ResponseBuilder responseBuilder = getResponseBuilder(request);
     if (request.isUpdateRegistered() != null &&
         request.isUpdateRegistered().booleanValue()) {
       responseBuilder.add(prompts.getString("dailyUpdateSetupSuccess"));
@@ -197,18 +191,17 @@ public class NotificationsApp extends DialogflowApp {
     }
     responseBuilder.endConversation();
 
-    return CompletableFuture.completedFuture(responseBuilder.build());
+    return responseBuilder.build();
   }
 
   @ForIntent("send_notification")
-  public CompletableFuture<ActionResponse> sendNotification(
-      ActionRequest request)
+  public ActionResponse sendNotification(ActionRequest request)
       throws ExecutionException, InterruptedException {
     // Retrieve a list of users that have subscribed for push notifications
     List<User> users =
         notificationService.getSubscribedUsersForIntent("tell_most_recent_tip");
     // Send a push notification to every user
-    ResponseBuilder responseBuilder = getResponseBuilder();
+    ResponseBuilder responseBuilder = getResponseBuilder(request);
     users.forEach(user -> {
       String title = prompts.getString("notificationTitle");
       try {
@@ -222,17 +215,17 @@ public class NotificationsApp extends DialogflowApp {
       }
     });
 
-    return CompletableFuture.completedFuture(responseBuilder.build());
+    return responseBuilder.build();
   }
 
   @ForIntent("restore_tips")
-  public CompletableFuture<ActionResponse> restoreTips(ActionRequest request)
+  public ActionResponse restoreTips(ActionRequest request)
       throws ExecutionException, InterruptedException, FileNotFoundException {
     tipService.loadTipsFromFile(TIPS_FILE_NAME);
-    ResponseBuilder responseBuilder = getResponseBuilder();
+    ResponseBuilder responseBuilder = getResponseBuilder(request);
     responseBuilder
         .add(prompts.getString("restoreTips"));
 
-    return CompletableFuture.completedFuture(responseBuilder.build());
+    return responseBuilder.build();
   }
 }
