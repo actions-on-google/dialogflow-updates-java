@@ -4,25 +4,7 @@ This sample shows an app that gives tips about developing apps for the Google As
 
 ## Setup Instructions
 
-### Webhook
-The sample includes entry points for both AWS Lambda and Google App Engine.
-
-#### Build for Google Cloud Platform
-    1. Delete ActionsAWSHandler.java
-    1. Remove the following line from build.gradle:
-       1. `apply from: 'build-aws.gradle'`
-    1. Download the [SDK for App Engine](https://cloud.google.com/appengine/docs/flexible/java/download)
-    1. Follow the steps for [Setting up a GCP project](https://cloud.google.com/appengine/docs/flexible/java/using-gradle#setting_up_and_validating_your_project_name_short)
-    1. Deploy to [App Engine using Gradle](https://cloud.google.com/appengine/docs/flexible/java/using-gradle) by running the following command: `gradle appengineDeploy`
-
-#### Build for AWS
-    1. Delete ActionsServlet
-    1. Remove the following line from build.gradle:
-       1. `apply from: 'build-gcp.gradle'`
-    1. Build the AWS Lambda compatible zip file using the buildAWSZip gradle task: `gradle buildAWSZip`
-    1. Deploy the zip file found at `build/distributions/myactions.zip` as an AWS Lambda function by following instructions at https://aws.amazon.com/lambda/
-
-### Setup
+### Action configuration
 
 #### Create a project
 1. Use the [Actions on Google Console](https://console.actions.google.com) to add a new project with a name of your choosing and click *Create Project*.
@@ -54,12 +36,31 @@ The sample includes entry points for both AWS Lambda and Google App Engine.
 1. Select *Start in test mode*, click *Enable*.
 
 #### Deploy
-1. Deploy the fulfillment webhook as previously described in the *Webhook* section.
+1. Deploy the fulfillment webhook as described in the *Webhook* section of this README.
 1. Go back to the Dialogflow console and select *Fulfillment* from the left navigation menu. Enable *Webhook*, set the value of *URL* to the webhook from the previous section, then click *Save*.
 
 #### Configure updates and push notifications
 1. Go to the [Actions on Google console](https://console.actions.google.com).
 1. Follow the *Console Setup* instructions in the [Daily Updates](https://developers.google.com/actions/assistant/updates/daily) and the [Push Notifications](https://developers.google.com/actions/assistant/updates/notifications) documentation to enable daily updates and push notifications.
+
+### Webhook
+The sample includes entry points for both AWS Lambda and Google App Engine.
+
+#### Build for Google Cloud Platform
+    1. Delete ActionsAWSHandler.java
+    1. Remove the following line from build.gradle:
+       1. `apply from: 'build-aws.gradle'`
+    1. Instructions for [Google Cloud App Engine Standard Environment](https://cloud.google.com/appengine/docs/standard/java/)
+    1. Use gcloud CLI to set the project to the name of your Actions project. Use 'gcloud init' to initialize and set your Google cloud project to the name of the Actions project.
+    1. Deploy to [App Engine using Gradle](https://cloud.google.com/appengine/docs/flexible/java/using-gradle) by running the following command: `gradle appengineDeploy`. You can do this directly from
+    IntelliJ by opening the Gradle tray and running the appEngineDeploy task. This will start the process to deploy the fulfillment code to Google Cloud App Engine.
+
+#### Build for AWS
+    1. Delete ActionsServlet
+    1. Remove the following line from build.gradle:
+       1. `apply from: 'build-gcp.gradle'`
+    1. Build the AWS Lambda compatible zip file using the buildAWSZip gradle task: `gradle buildAWSZip`
+    1. Deploy the zip file found at `build/distributions/myactions.zip` as an AWS Lambda function by following instructions at https://aws.amazon.com/lambda/
 
 ### Test on the Actions on Google simulator
 1. Type `Talk to my test app` in the simulator, or say `OK Google, talk to my test app` to any Actions on Google enabled device signed into your developer account.
