@@ -1,4 +1,4 @@
-# Actions on Google: Updates API sample using Java and Cloud Functions for Firebase
+# Actions on Google: Updates API sample using Java and Cloud Firestore for Firebase
 
 This sample shows an app that gives tips about developing apps for the Google Assistant using Actions on Google.
 
