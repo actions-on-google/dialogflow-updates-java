@@ -42,39 +42,36 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.concurrent.ExecutionException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 
 public class NotificationService {
 
-  private static final String FIREBASE_SERVICE_ACCOUNT_FILE =
-      "firebase-service-account.json";
-  private static final String ACTIONS_API_SERVICE_ACCOUNT_FILE =
+  private static final ResourceBundle rb = ResourceBundle.getBundle("config");
+  private static final String SERVICE_ACCOUNT_FILE =
       "service-account.json";
+
   private final ClassLoader classLoader = getClass().getClassLoader();
   private final Firestore db;
-  private final ServiceAccountCredentials serviceAccountCredentials;
+  private final GoogleCredentials googleCredentials;
 
   public NotificationService() throws IOException {
     db = loadDatabase();
-    serviceAccountCredentials = loadCredentials();
+    googleCredentials = loadCredentials();
   }
 
   private Firestore loadDatabase() throws IOException {
     if (FirebaseApp.getApps().isEmpty()) {
-      String firebaseServiceAccountFile = classLoader
-          .getResource(FIREBASE_SERVICE_ACCOUNT_FILE)
-          .getFile();
-      InputStream firebaseServiceAccount = new FileInputStream(
-          firebaseServiceAccountFile);
-      GoogleCredentials googleCredentials =
-          GoogleCredentials.fromStream(firebaseServiceAccount);
+      GoogleCredentials credentials =
+          GoogleCredentials.getApplicationDefault();
       FirebaseOptions options = new FirebaseOptions.Builder()
-          .setCredentials(googleCredentials)
+          .setCredentials(credentials)
+          .setProjectId(rb.getString("project_id"))
           .build();
       FirebaseApp.initializeApp(options);
     }
@@ -83,7 +80,7 @@ public class NotificationService {
 
   private ServiceAccountCredentials loadCredentials() throws IOException {
     String actionsApiServiceAccountFile = classLoader
-        .getResource(ACTIONS_API_SERVICE_ACCOUNT_FILE)
+        .getResource(SERVICE_ACCOUNT_FILE)
         .getFile();
     InputStream actionsApiServiceAccount = new FileInputStream(
         actionsApiServiceAccountFile);
@@ -117,12 +114,15 @@ public class NotificationService {
     StringEntity entity = new StringEntity(new Gson().toJson(notification));
     entity.setContentType(ContentType.APPLICATION_JSON.getMimeType());
     request.setEntity(entity);
-    HttpClient httpClient = new DefaultHttpClient();
+    HttpClient httpClient = HttpClientBuilder.create().build();
     httpClient.execute(request);
   }
 
   private String getAccessToken() throws IOException {
-    AccessToken token = serviceAccountCredentials.refreshAccessToken();
+    AccessToken token = googleCredentials.getAccessToken();
+    if (googleCredentials.getAccessToken() == null) {
+      token = googleCredentials.refreshAccessToken();
+    }
     return token.getTokenValue();
   }
 

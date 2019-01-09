@@ -32,19 +32,17 @@ import com.google.firebase.FirebaseOptions;
 import com.google.firebase.cloud.FirestoreClient;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 public class TipService {
 
-  private static final String SERVICE_ACCOUNT_FILE =
-      "firebase-service-account.json";
+  private static final ResourceBundle rb = ResourceBundle.getBundle("config");
   private final ClassLoader classLoader = getClass().getClassLoader();
   private final Firestore db;
 
@@ -54,14 +52,11 @@ public class TipService {
 
   private Firestore loadDatabase() throws IOException {
     if (FirebaseApp.getApps().isEmpty()) {
-      String serviceAccountFile = classLoader
-          .getResource(SERVICE_ACCOUNT_FILE)
-          .getFile();
-      InputStream serviceAccount = new FileInputStream(serviceAccountFile);
       GoogleCredentials credentials =
-          GoogleCredentials.fromStream(serviceAccount);
+          GoogleCredentials.getApplicationDefault();
       FirebaseOptions options = new FirebaseOptions.Builder()
           .setCredentials(credentials)
+          .setProjectId(rb.getString("project_id"))
           .build();
       FirebaseApp.initializeApp(options);
     }
