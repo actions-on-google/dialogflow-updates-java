@@ -33,29 +33,20 @@ sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
-    // TODO: Remove when library is released.
-    maven {
-        url "http://oss.sonatype.org/content/repositories/snapshots/"
-    }
-}
-
-configurations.all {
-    // Check for changes to dependencies every day.
-    // TODO: Remove when library is released.
-    resolutionStrategy.cacheDynamicVersionsFor(2, "minutes")
 }
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 
-    // TODO: Change version upon release.
-    compile group: 'com.google.actions', name: 'actions-on-google', version: '1.0-SNAPSHOT'
+    compile group: 'com.google.actions', name: 'actions-on-google', version: '1.0.0'
 
     compile group: 'com.google.auth', name: 'google-auth-library-oauth2-http', version: '0.12.0'
 
-    compile group: 'com.google.firebase', name: 'firebase-admin',  version: '6.3.0'
+    compile group: 'com.google.firebase', name: 'firebase-admin', version: '6.3.0'
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
+
+    testCompile "org.mockito:mockito-core:+"
 }
 
 compileKotlin {

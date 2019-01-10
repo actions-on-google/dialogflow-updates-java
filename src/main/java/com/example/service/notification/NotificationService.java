@@ -16,8 +16,6 @@
 
 package com.example.service.notification;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.example.service.notification.data.Notification;
 import com.example.service.notification.data.PushMessage;
 import com.example.service.notification.data.PushNotification;
@@ -34,27 +32,24 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.cloud.FirestoreClient;
 import com.google.gson.Gson;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
-import java.util.concurrent.ExecutionException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class NotificationService {
 
   private static final ResourceBundle rb = ResourceBundle.getBundle("config");
-  private static final String SERVICE_ACCOUNT_FILE =
-      "service-account.json";
+  private static final String SERVICE_ACCOUNT_FILE = "service-account.json";
 
   private final ClassLoader classLoader = getClass().getClassLoader();
   private final Firestore db;
@@ -67,32 +62,29 @@ public class NotificationService {
 
   private Firestore loadDatabase() throws IOException {
     if (FirebaseApp.getApps().isEmpty()) {
-      GoogleCredentials credentials =
-          GoogleCredentials.getApplicationDefault();
-      FirebaseOptions options = new FirebaseOptions.Builder()
-          .setCredentials(credentials)
-          .setProjectId(rb.getString("project_id"))
-          .build();
+      GoogleCredentials credentials = GoogleCredentials.getApplicationDefault();
+      FirebaseOptions options =
+          new FirebaseOptions.Builder()
+              .setCredentials(credentials)
+              .setProjectId(rb.getString("project_id"))
+              .build();
       FirebaseApp.initializeApp(options);
     }
     return FirestoreClient.getFirestore();
   }
 
   private ServiceAccountCredentials loadCredentials() throws IOException {
-    String actionsApiServiceAccountFile = classLoader
-        .getResource(SERVICE_ACCOUNT_FILE)
-        .getFile();
-    InputStream actionsApiServiceAccount = new FileInputStream(
-        actionsApiServiceAccountFile);
+    String actionsApiServiceAccountFile = classLoader.getResource(SERVICE_ACCOUNT_FILE).getFile();
+    InputStream actionsApiServiceAccount = new FileInputStream(actionsApiServiceAccountFile);
     ServiceAccountCredentials serviceAccountCredentials =
         ServiceAccountCredentials.fromStream(actionsApiServiceAccount);
     return (ServiceAccountCredentials)
-        serviceAccountCredentials.createScoped(Collections.singleton(
-            "https://www.googleapis.com/auth/actions.fulfillment.conversation"));
+        serviceAccountCredentials.createScoped(
+            Collections.singleton(
+                "https://www.googleapis.com/auth/actions.fulfillment.conversation"));
   }
 
-  private PushNotification createNotification(String title, String userId,
-      String intent) {
+  private PushNotification createNotification(String title, String userId, String intent) {
     Notification notification = new Notification(title);
     Target target = new Target(userId, intent);
     PushMessage message = new PushMessage(notification, target);
@@ -100,14 +92,12 @@ public class NotificationService {
     return new PushNotification(message, isInSandbox);
   }
 
-  public void sendNotification(String title, String userId, String intent)
-      throws IOException {
+  public void sendNotification(String title, String userId, String intent) throws IOException {
     checkNotNull(title, "title cannot be null.");
     checkNotNull(userId, "userId cannot be null.");
     checkNotNull(intent, "intent cannot be null.");
     PushNotification notification = createNotification(title, userId, intent);
-    HttpPost request = new HttpPost(
-        "https://actions.googleapis.com/v2/conversations:send");
+    HttpPost request = new HttpPost("https://actions.googleapis.com/v2/conversations:send");
     String token = getAccessToken();
     request.setHeader("Content-type", "application/json");
     request.setHeader("Authorization", "Bearer " + token);
@@ -139,17 +129,17 @@ public class NotificationService {
   public List<User> getSubscribedUsersForIntent(String intentName)
       throws ExecutionException, InterruptedException {
     checkNotNull(intentName, "intentName cannot be null.");
-    ApiFuture<QuerySnapshot> query = db.collection("users")
-        .whereEqualTo("intent", intentName)
-        .get();
+    ApiFuture<QuerySnapshot> query =
+        db.collection("users").whereEqualTo("intent", intentName).get();
     QuerySnapshot querySnapshot = query.get();
     List<User> users = new ArrayList<>();
-    querySnapshot.forEach(entry -> {
-      String id = entry.getString("userId");
-      String intent = entry.getString("intent");
-      User user = new User(id, intent);
-      users.add(user);
-    });
+    querySnapshot.forEach(
+        entry -> {
+          String id = entry.getString("userId");
+          String intent = entry.getString("intent");
+          User user = new User(id, intent);
+          users.add(user);
+        });
     return users;
   }
 }

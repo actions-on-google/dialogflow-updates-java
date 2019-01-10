@@ -1,76 +1,71 @@
-# Actions on Google: Updates API sample using Java and Cloud Firestore for Firebase
+# Actions on Google: Updates API Sample
 
-This sample shows an app that gives tips about developing apps for the Google Assistant using Actions on Google.
+This sample shows an app that gives tips about developing apps for the Google Assistant using Actions on Google and Cloud Firestore for Firebase  in Java.
 
-## Setup Instructions
+### Setup Instructions
 
-### Action configuration
-
-#### Create a project
-1. Use the [Actions on Google Console](https://console.actions.google.com) to add a new project with a name of your choosing and click *Create Project*.
-1. Click *Skip*, located on the top right.
-1. On the left navigation menu under *BUILD*, click on *Actions*. Click on *Add Your First Action* and choose your app's language(s).
-1. Select *Custom intent*, click *BUILD*. This will open a Dialogflow console. Click *CREATE*.
-1. Click on the gear icon to see the project settings.
-1. Select *Export and Import*.
-1. Select *Restore from zip*. Follow the directions to restore from the `agent.zip` file in this repo.
+#### Action Configuration
+1. From the [Actions on Google Console](https://console.actions.google.com/), add a new project (this will become your *Project ID*) > **Create Project** > **Skip**.
+1. From the left navigation menu under **Build** > **Actions** > **Add Your First Action** > **BUILD** (this will bring you to the Dialogflow console) > Select language and time zone > **CREATE**.
+1. In Dialogflow, go to **Settings** ⚙ > **Export and Import** > **Restore from zip**.
+    + Follow the directions to restore from the `agent.zip` file in this repo.
 1. In the `src/main/resources/config.properties` file of the project, update the value of the `project_id` field with the project ID of your newly created project.
 
 #### Enable the Actions API
-1. Visit the [Google Cloud console](https://console.cloud.google.com/) for the project used in the [Actions console](https://console.actions.google.com).
-1. Navigate to the [API Library](https://console.cloud.google.com/apis/library).
-1. Search for and enable the Google Actions API.
-1. Navigate to the Credentials page in the API manager.
-1. Click Create credentials > Service Account Key.
-1. Click the Select box under Service Account and click New Service Account.
-1. Give the Service Account the name (i.e. "service-account") and the role of Project Owner.
-1. Select the JSON key type.
-1. Click Create.
+1. From the Dialogflow console under **Settings** ⚙ > [Google Cloud](https://console.cloud.google.com/) link
+1. In the Cloud console, go to **Menu ☰** > **APIs & Services** > **Library** > select **Actions API** > **Enable**
+4. Under **Menu ☰** > **APIs & Services** > **Credentials** > **Create Credentials** > **Service Account Key**.
+5. From the dropdown, select **New Service Account**
+    + name:  `service-account`
+    + role:  **Project/Owner**
+    + key type: **JSON** > **Create**
+    + Your private JSON file will be downloaded to your local machine
 1. Place the newly downloaded file in the 'src/main/resources/' directory calling the file `service-account.json`.
 
-#### Setup Cloud Firestore for Firebase
-1. Go to the [Firebase console](https://console.firebase.google.com) and select the project that you have created on the Actions on Google console.
-1. On the left navigation menu under *DEVELOP*, click on *Database*.
-1. Under *Cloud Firestore Beta*, click *Create database*.
-1. Select *Start in test mode*, click *Enable*.
+#### Firestore Database Configuration
+1. From the [Firebase console](https://console.firebase.google.com), find and select your Actions on Google Project ID
+1. In the left navigation menu under **Develop** section > **Database** > **Create database** button > Select **Start in test mode** > **Enable**
 
-#### Deploy
-1. Deploy the fulfillment webhook as described in the *Webhook* section of this README.
-1. Go back to the Dialogflow console and select *Fulfillment* from the left navigation menu. Enable *Webhook*, set the value of *URL* to the webhook from the previous section, then click *Save*.
+#### Configure Daily Updates and Notifications
+1. From the [Actions on Google console](https://console.actions.google.com) > under **Build** > **Actions**
+1. To setup Daily Updates:
+    + Select the `tell_tip` intent > under **User engagement** > **Enable** `Would you like to offer daily updates to users?` > add a title `Actions on Google Advice` > **Save**
+    + Select the `tell_most_recent_tip` intent > under **User engagement** > **Enable** `Would you like to send push notifications? If yes, user permission will be needed` > add a title `Most Recent Tip` > **Save**
 
-#### Configure updates and push notifications
-1. Go to the [Actions on Google console](https://console.actions.google.com).
-1. Follow the *Console Setup* instructions in the [Daily Updates](https://developers.google.com/actions/assistant/updates/daily) and the [Push Notifications](https://developers.google.com/actions/assistant/updates/notifications) documentation to enable daily updates and push notifications.
+#### App Engine Deployment & Webhook Configuration
+When a new project is created using the Actions Console, it also creates a Google Cloud project in the background.
 
-### Webhook
+1. Download & install the [Google Cloud SDK](https://cloud.google.com/sdk/docs/)
+1. Configure the gcloud CLI and set your Google Cloud project to the name of your Actions on Google Project ID, which you can find from the [Actions on Google console](https://console.actions.google.com/) under Settings ⚙
+    + `gcloud init`
+    + `gcloud auth application-default login`
+    + `gcloud components install app-engine-java`
+    + `gcloud components update`
+1. Deploy to [App Engine using Gradle](https://cloud.google.com/appengine/docs/flexible/java/using-gradle):
+    + `gradle appengineDeploy` OR
+    +  From within IntelliJ, open the Gradle tray and run the appEngineDeploy task.
+1. Back in the [Dialogflow console](https://console.dialogflow.com), from the left navigation menu under **Fulfillment** > **Enable Webhook**, set the value of **URL** to `https://<YOUR_PROJECT_ID>.appspot.com` > **Save**.
 
-#### Deploy to App Engine
-    1. Instructions for [Google Cloud App Engine Standard Environment](https://cloud.google.com/appengine/docs/standard/java/)
-    1. Use gcloud CLI to set the project to the name of your Actions project. Use 'gcloud init' to initialize and set your Google cloud project to the name of the Actions project.
-    1. Deploy to [App Engine using Gradle](https://cloud.google.com/appengine/docs/flexible/java/using-gradle) by running the following command: `gradle appengineDeploy`. You can do this directly from
-    IntelliJ by opening the Gradle tray and running the appEngineDeploy task. This will start the process to deploy the fulfillment code to Google Cloud App Engine.
-
-### Test on the Actions on Google simulator
-1. Type `Talk to my test app` in the simulator, or say `OK Google, talk to my test app` to any Actions on Google enabled device signed into your developer account.
+#### Testing this Sample
+1. In the [Dialogflow console](https://console.dialogflow.com), from the left navigation menu > **Integrations** > **Integration Settings** under Google Assistant > Enable **Auto-preview changes** >  **Test** to open the Actions on Google simulator.
+1. Type `Talk to my test app` in the simulator, or say `OK Google, talk to my test app` to Google Assistant on a mobile device associated with your Action's account.
 1. To test daily updates, choose a category. After the tip, the app will show a suggestion chip to subscribe for daily updates. Once a user is subscribed, they will receive update notifications daily for the time they specified.
 1. To test push notifications, choose to hear the most recent tip. After the tip, the app will show
-a suggestion chip to subscribe for push notifications. To send a push notification to all subscribed users, type "send notification" at any point during the conversation.
+   a suggestion chip to subscribe for push notifications. To send a push notification to all subscribed users, type "send notification" at any point during the conversation.
 
-For more detailed information on deployment, see the [documentation](https://developers.google.com/actions/dialogflow/deploy-fulfillment).
+### References & Issues
++ Questions? Go to [StackOverflow](https://stackoverflow.com/questions/tagged/actions-on-google), [Actions on Google G+ Developer Community](https://g.co/actionsdev), or [Support](https://developers.google.com/actions/support/).
++ For bugs, please report an issue on Github.
++ For Actions on Google [documentation](https://developers.google.com/actions/).
++ For specifics about [Gradle & the App Engine Plugin](https://cloud.google.com/appengine/docs/flexible/java/using-gradle).
++ For details on deploying [Java apps with App Engine](https://cloud.google.com/appengine/docs/standard/java/quickstart).
++ For more info on [Daily Updates](https://developers.google.com/actions/assistant/updates/daily) and the [Push Notifications](https://developers.google.com/actions/assistant/updates/notifications)
 
-## References and How to report bugs
-* Actions on Google documentation: [https://developers.google.com/actions/](https://developers.google.com/actions/).
-* If you find any issues, please open a bug here on GitHub.
-* Questions are answered on [StackOverflow](https://stackoverflow.com/questions/tagged/actions-on-google).
-
-## How to make contributions?
+### Make Contributions
 Please read and follow the steps in the [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## License
+### License
 See [LICENSE](LICENSE).
 
-## Terms
+### Terms
 Your use of this sample is subject to, and by using or downloading the sample files you agree to comply with, the [Google APIs Terms of Service](https://developers.google.com/terms/).
-
-## Google+
-Actions on Google Developers Community on Google+ [https://g.co/actionsdev](https://g.co/actionsdev).

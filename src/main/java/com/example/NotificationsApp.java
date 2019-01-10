@@ -16,18 +16,11 @@
 
 package com.example;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.example.service.notification.NotificationService;
 import com.example.service.tip.TipService;
 import com.example.service.tip.data.Tip;
 import com.example.service.tip.data.User;
-import com.google.actions.api.ActionRequest;
-import com.google.actions.api.ActionResponse;
-import com.google.actions.api.Capability;
-import com.google.actions.api.ConstantsKt;
-import com.google.actions.api.DialogflowApp;
-import com.google.actions.api.ForIntent;
+import com.google.actions.api.*;
 import com.google.actions.api.response.ResponseBuilder;
 import com.google.actions.api.response.helperintent.RegisterUpdate;
 import com.google.actions.api.response.helperintent.UpdatePermission;
@@ -36,12 +29,15 @@ import com.google.api.services.actions_fulfillment.v2.model.BasicCard;
 import com.google.api.services.actions_fulfillment.v2.model.Button;
 import com.google.api.services.actions_fulfillment.v2.model.OpenUrlAction;
 import com.google.common.collect.Lists;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutionException;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class NotificationsApp extends DialogflowApp {
 
@@ -51,22 +47,18 @@ public class NotificationsApp extends DialogflowApp {
   private final NotificationService notificationService;
   private final ResourceBundle prompts;
 
-  public NotificationsApp()
-      throws IOException, ExecutionException, InterruptedException {
-    this(new TipService(), new NotificationService(),
-        ResourceBundle.getBundle(BUNDLE_NAME));
+  public NotificationsApp() throws IOException, ExecutionException, InterruptedException {
+    this(new TipService(), new NotificationService(), ResourceBundle.getBundle(BUNDLE_NAME));
   }
 
-  protected NotificationsApp(TipService tipService,
-      NotificationService notificationService,
-      ResourceBundle resourceBundle)
+  protected NotificationsApp(
+      TipService tipService, NotificationService notificationService, ResourceBundle resourceBundle)
       throws IOException, ExecutionException, InterruptedException {
     super();
     this.tipService = checkNotNull(tipService, "tipService cannot be null.");
-    this.notificationService = checkNotNull(notificationService,
-        "notificationService cannot be null.");
-    this.prompts = checkNotNull(resourceBundle,
-        "resourceBundle cannot be null.");
+    this.notificationService =
+        checkNotNull(notificationService, "notificationService cannot be null.");
+    this.prompts = checkNotNull(resourceBundle, "resourceBundle cannot be null.");
     tipService.loadTipsFromFile(TIPS_FILE_NAME);
   }
 
@@ -96,13 +88,16 @@ public class NotificationsApp extends DialogflowApp {
     responseBuilder.add(tip.getTip());
     // Display data in a card for devices with screen
     if (request.hasCapability(Capability.SCREEN_OUTPUT.getValue())) {
-      responseBuilder.add(new BasicCard()
-          .setFormattedText(tip.getTip())
-          .setButtons(Arrays.asList(new Button()
-              .setTitle(prompts.getString("buttonTitle"))
-              .setOpenUrlAction(new OpenUrlAction().setUrl(tip.getUrl())))))
-          .addSuggestions(
-              new String[]{prompts.getString("dailyUpdatesSuggestion")});
+      responseBuilder
+          .add(
+              new BasicCard()
+                  .setFormattedText(tip.getTip())
+                  .setButtons(
+                      Arrays.asList(
+                          new Button()
+                              .setTitle(prompts.getString("buttonTitle"))
+                              .setOpenUrlAction(new OpenUrlAction().setUrl(tip.getUrl())))))
+          .addSuggestions(new String[] {prompts.getString("dailyUpdatesSuggestion")});
     } else {
       responseBuilder.endConversation();
     }
@@ -119,13 +114,16 @@ public class NotificationsApp extends DialogflowApp {
     responseBuilder.add(tip.getTip());
     // Display data in a card for devices with screen
     if (request.hasCapability(Capability.SCREEN_OUTPUT.getValue())) {
-      responseBuilder.add(new BasicCard()
-          .setFormattedText(tip.getTip())
-          .setButtons(Arrays.asList(new Button()
-              .setTitle(prompts.getString("buttonTitle"))
-              .setOpenUrlAction(new OpenUrlAction().setUrl(tip.getUrl())))))
-          .addSuggestions(
-              new String[]{prompts.getString("notificationsSuggestion")});
+      responseBuilder
+          .add(
+              new BasicCard()
+                  .setFormattedText(tip.getTip())
+                  .setButtons(
+                      Arrays.asList(
+                          new Button()
+                              .setTitle(prompts.getString("buttonTitle"))
+                              .setOpenUrlAction(new OpenUrlAction().setUrl(tip.getUrl())))))
+          .addSuggestions(new String[] {prompts.getString("notificationsSuggestion")});
     } else {
       responseBuilder.endConversation();
     }
@@ -136,9 +134,7 @@ public class NotificationsApp extends DialogflowApp {
   public ActionResponse setupNotification(ActionRequest request) {
     // Ask for the user's permission to send push notifications
     ResponseBuilder responseBuilder = getResponseBuilder(request);
-    responseBuilder
-        .add(" ")
-        .add(new UpdatePermission().setIntent("tell_most_recent_tip"));
+    responseBuilder.add(" ").add(new UpdatePermission().setIntent("tell_most_recent_tip"));
 
     return responseBuilder.build();
   }
@@ -147,13 +143,11 @@ public class NotificationsApp extends DialogflowApp {
   public ActionResponse completeNotificationSetup(ActionRequest request) {
     // Verify the user has subscribed for push notifications
     ResponseBuilder responseBuilder = getResponseBuilder(request);
-    if (request.isPermissionGranted() != null &&
-        request.isPermissionGranted().booleanValue()) {
+    if (request.isPermissionGranted() != null && request.isPermissionGranted().booleanValue()) {
       Argument userId = request.getArgument(ConstantsKt.ARG_UPDATES_USER_ID);
       if (userId != null) {
         // Store the user's ID in the database
-        notificationService.subscribeUserToIntent(userId.getTextValue(),
-            "tell_most_recent_tip");
+        notificationService.subscribeUserToIntent(userId.getTextValue(), "tell_most_recent_tip");
       }
       responseBuilder.add(prompts.getString("notificationSetupSuccess"));
     } else {
@@ -169,12 +163,12 @@ public class NotificationsApp extends DialogflowApp {
     String category = (String) request.getParameter("category");
     ResponseBuilder responseBuilder = getResponseBuilder(request);
     responseBuilder.add(" ");
-    responseBuilder.add(new RegisterUpdate()
-        .setIntent("tell_tip")
-        .setFrequency("DAILY")
-        .setArguments(Arrays.asList(new Argument()
-            .setName("category")
-            .setTextValue(category))));
+    responseBuilder.add(
+        new RegisterUpdate()
+            .setIntent("tell_tip")
+            .setFrequency("DAILY")
+            .setArguments(
+                Arrays.asList(new Argument().setName("category").setTextValue(category))));
 
     return responseBuilder.build();
   }
@@ -183,8 +177,7 @@ public class NotificationsApp extends DialogflowApp {
   public ActionResponse completeDailyUpdatesSetup(ActionRequest request) {
     // Verify the user has subscribed for daily updates
     ResponseBuilder responseBuilder = getResponseBuilder(request);
-    if (request.isUpdateRegistered() != null &&
-        request.isUpdateRegistered().booleanValue()) {
+    if (request.isUpdateRegistered() != null && request.isUpdateRegistered().booleanValue()) {
       responseBuilder.add(prompts.getString("dailyUpdateSetupSuccess"));
     } else {
       responseBuilder.add(prompts.getString("dailyUpdateSetupFail"));
@@ -198,22 +191,20 @@ public class NotificationsApp extends DialogflowApp {
   public ActionResponse sendNotification(ActionRequest request)
       throws ExecutionException, InterruptedException {
     // Retrieve a list of users that have subscribed for push notifications
-    List<User> users =
-        notificationService.getSubscribedUsersForIntent("tell_most_recent_tip");
+    List<User> users = notificationService.getSubscribedUsersForIntent("tell_most_recent_tip");
     // Send a push notification to every user
     ResponseBuilder responseBuilder = getResponseBuilder(request);
-    users.forEach(user -> {
-      String title = prompts.getString("notificationTitle");
-      try {
-        notificationService
-            .sendNotification(title, user.getId(), user.getIntent());
-        responseBuilder
-            .add(prompts.getString("notificationSendSuccess"));
-      } catch (IOException e) {
-        e.printStackTrace();
-        responseBuilder.add(prompts.getString("notificationSendFail"));
-      }
-    });
+    users.forEach(
+        user -> {
+          String title = prompts.getString("notificationTitle");
+          try {
+            notificationService.sendNotification(title, user.getId(), user.getIntent());
+            responseBuilder.add(prompts.getString("notificationSendSuccess"));
+          } catch (IOException e) {
+            e.printStackTrace();
+            responseBuilder.add(prompts.getString("notificationSendFail"));
+          }
+        });
 
     return responseBuilder.build();
   }
@@ -223,8 +214,7 @@ public class NotificationsApp extends DialogflowApp {
       throws ExecutionException, InterruptedException, FileNotFoundException {
     tipService.loadTipsFromFile(TIPS_FILE_NAME);
     ResponseBuilder responseBuilder = getResponseBuilder(request);
-    responseBuilder
-        .add(prompts.getString("restoreTips"));
+    responseBuilder.add(prompts.getString("restoreTips"));
 
     return responseBuilder.build();
   }

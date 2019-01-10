@@ -18,16 +18,15 @@ package com.example;
 
 import com.example.service.notification.NotificationService;
 import com.example.service.tip.TipService;
-import java.util.ResourceBundle;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ResourceBundle;
 import java.util.concurrent.CompletableFuture;
-import org.mockito.Mockito;
-
 
 public class NotificationsAppTest {
 
@@ -37,19 +36,18 @@ public class NotificationsAppTest {
       Mockito.mock(NotificationService.class);
 
   private static String fromFile(String fileName) throws IOException {
-    Path absolutePath = Paths.get("src", "test", "resources",
-        fileName);
+    Path absolutePath = Paths.get("src", "test", "resources", fileName);
     return new String(Files.readAllBytes(absolutePath));
   }
 
   @Test
   public void testWelcome() throws Exception {
-    NotificationsApp app = new NotificationsApp(tipServiceMock,
-        notificationServiceMock, ResourceBundle.getBundle(BUNDLE));
+    NotificationsApp app =
+        new NotificationsApp(
+            tipServiceMock, notificationServiceMock, ResourceBundle.getBundle(BUNDLE));
     String requestBody = fromFile("request_welcome.json");
 
-    CompletableFuture<String> future = app.handleRequest(requestBody,
-        null /* headers */);
+    CompletableFuture<String> future = app.handleRequest(requestBody, null /* headers */);
 
     String responseJson = future.get();
     System.out.println("Actions response = " + responseJson);
