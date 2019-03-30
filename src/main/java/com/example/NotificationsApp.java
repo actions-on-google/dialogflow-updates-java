@@ -143,7 +143,7 @@ public class NotificationsApp extends DialogflowApp {
   public ActionResponse completeNotificationSetup(ActionRequest request) {
     // Verify the user has subscribed for push notifications
     ResponseBuilder responseBuilder = getResponseBuilder(request);
-    if (request.isPermissionGranted() != null && request.isPermissionGranted().booleanValue()) {
+    if (request.isPermissionGranted()) {
       Argument userId = request.getArgument(ConstantsKt.ARG_UPDATES_USER_ID);
       if (userId != null) {
         // Store the user's ID in the database
@@ -177,7 +177,7 @@ public class NotificationsApp extends DialogflowApp {
   public ActionResponse completeDailyUpdatesSetup(ActionRequest request) {
     // Verify the user has subscribed for daily updates
     ResponseBuilder responseBuilder = getResponseBuilder(request);
-    if (request.isUpdateRegistered() != null && request.isUpdateRegistered().booleanValue()) {
+    if (request.isUpdateRegistered()) {
       responseBuilder.add(prompts.getString("dailyUpdateSetupSuccess"));
     } else {
       responseBuilder.add(prompts.getString("dailyUpdateSetupFail"));
