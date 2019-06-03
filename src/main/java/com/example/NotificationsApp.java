@@ -20,7 +20,12 @@ import com.example.service.notification.NotificationService;
 import com.example.service.tip.TipService;
 import com.example.service.tip.data.Tip;
 import com.example.service.tip.data.User;
-import com.google.actions.api.*;
+import com.google.actions.api.ActionRequest;
+import com.google.actions.api.ActionResponse;
+import com.google.actions.api.DialogflowApp;
+import com.google.actions.api.Capability;
+import com.google.actions.api.ConstantsKt;
+import com.google.actions.api.ForIntent;
 import com.google.actions.api.response.ResponseBuilder;
 import com.google.actions.api.response.helperintent.RegisterUpdate;
 import com.google.actions.api.response.helperintent.UpdatePermission;
@@ -66,14 +71,21 @@ public class NotificationsApp extends DialogflowApp {
   public ActionResponse welcome(ActionRequest request)
       throws ExecutionException, InterruptedException {
     ResponseBuilder responseBuilder = getResponseBuilder(request);
-    responseBuilder.add(prompts.getString("welcome"));
 
-    // Get a list of all data categories from the database
-    List<String> uniqueCategories = tipService.getCategories();
-    uniqueCategories.add("most recent");
-    uniqueCategories = Lists.reverse(uniqueCategories);
-    responseBuilder.addSuggestions(uniqueCategories.toArray(new String[0]));
+    if (request.hasCapability(Capability.SCREEN_OUTPUT.getValue())) {
+      responseBuilder.add(prompts.getString("welcome"));
 
+      // Get a list of all data categories from the database
+      List<String> uniqueCategories = tipService.getCategories();
+      uniqueCategories.add("most recent");
+      uniqueCategories = Lists.reverse(uniqueCategories);
+      responseBuilder.addSuggestions(uniqueCategories.toArray(new String[0]));
+    } else {
+      // User engagement features aren't currently supported on speaker-only devices
+      // See docs: https://developers.google.com/actions/assistant/updates/overview
+      responseBuilder.add(prompts.getString("welcomeSpeakerOnly"));
+      responseBuilder.endConversation();
+    }
     return responseBuilder.build();
   }
 
@@ -86,21 +98,14 @@ public class NotificationsApp extends DialogflowApp {
     // Send data to the user
     ResponseBuilder responseBuilder = getResponseBuilder(request);
     responseBuilder.add(tip.getTip());
-    // Display data in a card for devices with screen
-    if (request.hasCapability(Capability.SCREEN_OUTPUT.getValue())) {
-      responseBuilder
-          .add(
-              new BasicCard()
-                  .setFormattedText(tip.getTip())
-                  .setButtons(
-                      Arrays.asList(
-                          new Button()
-                              .setTitle(prompts.getString("buttonTitle"))
-                              .setOpenUrlAction(new OpenUrlAction().setUrl(tip.getUrl())))))
-          .addSuggestions(new String[] {prompts.getString("dailyUpdatesSuggestion")});
-    } else {
-      responseBuilder.endConversation();
-    }
+    responseBuilder
+        .add(new BasicCard()
+            .setFormattedText(tip.getTip())
+            .setButtons(Arrays.asList(new Button()
+                            .setTitle(prompts.getString("buttonTitle"))
+                            .setOpenUrlAction(new OpenUrlAction().setUrl(tip.getUrl())))))
+        .addSuggestions(new String[] {prompts.getString("dailyUpdatesSuggestion")});
+
     return responseBuilder.build();
   }
 
@@ -113,20 +118,13 @@ public class NotificationsApp extends DialogflowApp {
     ResponseBuilder responseBuilder = getResponseBuilder(request);
     responseBuilder.add(tip.getTip());
     // Display data in a card for devices with screen
-    if (request.hasCapability(Capability.SCREEN_OUTPUT.getValue())) {
-      responseBuilder
-          .add(
-              new BasicCard()
-                  .setFormattedText(tip.getTip())
-                  .setButtons(
-                      Arrays.asList(
-                          new Button()
+    responseBuilder
+        .add(new BasicCard()
+              .setFormattedText(tip.getTip())
+              .setButtons(Arrays.asList(new Button()
                               .setTitle(prompts.getString("buttonTitle"))
                               .setOpenUrlAction(new OpenUrlAction().setUrl(tip.getUrl())))))
           .addSuggestions(new String[] {prompts.getString("notificationsSuggestion")});
-    } else {
-      responseBuilder.endConversation();
-    }
     return responseBuilder.build();
   }
 
