@@ -13,7 +13,7 @@ This sample demonstrates Actions on Google user engagement features for use on G
 ### Configuration
 #### Actions Console
 1. From the [Actions on Google Console](https://console.actions.google.com/), New project (this will become your *Project ID*) > **Create project** > under **More options** > **Conversational**.
-1. From the top menu under **Develop** > **Actions** > **Add your first action** > **BUILD** (this will bring you to the Dialogflow console) > Select language and time zone > **CREATE**.
+1. From the top menu under **Develop** > **Actions** (left nav) > **Add your first action** > **BUILD** (this will bring you to the Dialogflow console) > Select language and time zone > **CREATE**.
 1. In Dialogflow, go to **Settings** ⚙ > **Export and Import** > **Restore from zip**.
    + Follow the directions to restore from the `agent.zip` file in this repo.
 1. In the `src/main/resources/config.properties` file of the project, update the value of the `project_id` field with the project ID of your newly created project.
