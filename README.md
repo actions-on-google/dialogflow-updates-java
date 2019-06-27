@@ -12,8 +12,8 @@ This sample demonstrates Actions on Google user engagement features for use on G
 
 ### Configuration
 #### Actions Console
-1. From the [Actions on Google Console](https://console.actions.google.com/), add a new project (this will become your *Project ID*) > **Create Project** > under **More options** > **Conversational**.
-1. From the left navigation menu under **Build** > **Actions** > **Add Your First Action** > **BUILD** (this will bring you to the Dialogflow console) > Select language and time zone > **CREATE**.
+1. From the [Actions on Google Console](https://console.actions.google.com/), New project (this will become your *Project ID*) > **Create project** > under **More options** > **Conversational**.
+1. From the top menu under **Develop** > **Actions** > **Add your first action** > **BUILD** (this will bring you to the Dialogflow console) > Select language and time zone > **CREATE**.
 1. In Dialogflow, go to **Settings** ⚙ > **Export and Import** > **Restore from zip**.
    + Follow the directions to restore from the `agent.zip` file in this repo.
 1. In the `src/main/resources/config.properties` file of the project, update the value of the `project_id` field with the project ID of your newly created project.
@@ -34,7 +34,7 @@ This sample demonstrates Actions on Google user engagement features for use on G
 1. In the left navigation menu under **Develop** section > **Database** > **Create database** button > Select **Start in test mode** > **Enable**
 
 #### Configure Daily Updates and Notifications
-1. From the [Actions on Google console](https://console.actions.google.com) > under **Build** > **Actions** :
+1. From the [Actions on Google console](https://console.actions.google.com) > under the top menu **Develop** > **Actions** (left nav):
     + Select the `tell_tip` intent > under **User engagement** > **Enable** `Would you like to offer daily updates to users?` > add a title `Advice Alert` > **Save**
     + Select the `tell_most_recent_tip` intent > under **User engagement** > **Enable** `Would you like to send push notifications? If yes, user permission will be needed` > add a title `Latest Info Alert` > **Save**
 
